@@ -1,4 +1,5 @@
-from algorithms import hungarian 
+from algorithms import hungarian
+from algorithms import hopcraft_karp
 import numpy as np 
 class BipartiteGraph:
     def __init__(self,left_nodes,right_nodes):
@@ -36,5 +37,18 @@ class BipartiteGraph:
         C = self.to_cost_matrix()
         marked = hungarian(C)
         return self.extract_maching(marked)
+    def max_matching(self):
+        u_count = len(self.left())
+        v_count = len(self.right())
+        u_index = {u: i+1 for i,u in enumerate(self.left)}
+        v_index = {v: i+1 for i,v in enumerate(self.right)}
+        adj = {u_index[u]: [] for u in self.left}
+
+        for u in self.edges:
+            for v in self.edges[u]:
+                adj[u_index[u]].append(v_index[v])
+        hk = Hopcraft_Karp(u_count,v_count,adj)
+        return hk.max_matching()
+
 
     
