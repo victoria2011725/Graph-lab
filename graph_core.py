@@ -40,6 +40,16 @@ class Graph:
         for u in self.edges:
             for v,weight in self.edges[u].items():
                 edges.append((u,v,weight))
+    def get_edges(self):
+        edges = []
+        seen = set()
+
+        for u in self.nodes():
+            for v,weight in self.edges[u].items():
+                if (v,u) not in seen:
+                    edges.append((weight,u,v))
+                    seen.add((u,v))
+        return edges 
         return edges 
     def has_negative_weights(self):
         for u in self.edges:
