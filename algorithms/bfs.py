@@ -12,7 +12,7 @@ def bfs(graph,source,target):
                 current = parent[current] 
             path.reverse()
             return path 
-        for neighbour,weight in graph.edges[current_node].items():
+        for neighbour in graph.neighbours(current_node):
             if neighbour not in parent:
                 parent[neighbour] = current_node 
                 queue.append(neighbour)

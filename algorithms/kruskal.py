@@ -1,5 +1,5 @@
 def kruskal(graph):
-    edges = graph.get_edges()
+    edges = graph.sort_edges()   
     edges.sort()
     mst = []
     parent = {}

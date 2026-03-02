@@ -6,9 +6,9 @@ def bellman_ford(graph,source):
         prev[node] = None
     distances[source] = 0
 
-    for _ in range(len(graph.nodes)-1):
+    for _ in range(len(graph.nodes())-1):
         changed = False 
-        for u,v,weight in graph.edges():
+        for u,v,weight in graph.edge_list():
             if distances[u] != float("inf") and distances[u] + weight < distances[v]:
                 distances[v] = distances[u] + weight
                 prev[v] = u 
@@ -16,7 +16,7 @@ def bellman_ford(graph,source):
             if not changed:
                 break 
     # negative cycle check
-    for weight,u,v in graph.edges():
+    for u,v,weight in graph.edge_list():
             if distances[u] != float("inf") and distances[u] + weight < distances[v]:
                 return None
     

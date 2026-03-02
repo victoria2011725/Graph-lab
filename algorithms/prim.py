@@ -23,7 +23,7 @@ def find_all_mst(graph):
     global_visited = set()
 
     for node in graph.nodes():
-        if node not in gloabl_visited:
+        if node not in global_visited:
             mst,visited = prim(graph,node)
             MSTs.append(mst)
             global_visited.update(visited)

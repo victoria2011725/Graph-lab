@@ -9,8 +9,8 @@ def kosaraju(graph):
         stack.append(u)
     def get_transpose():
         transpose = {}
-        for u in graph.edges:
-            for v,weight in graph.edges[u].items():
+        for u in graph.adj:
+            for v,weight in graph.adj[u].items():
                 if v not in transpose:
                     transpose[v] = {}
                 transpose[v][u] = weight 

@@ -8,8 +8,8 @@ from .hungarian import hungarian
 from .johnson import johnson
 from .kosaraju import kosaraju
 from .kruskal import kruskal 
-from .prim import prim 
+from .prim import find_all_mst
 from .tarjan import tarjan 
-from . import utils 
+from . utils import reconstruct_path
 from .hopcraft_karp import Hopcraft_Karp
 from .edmond_karp import edmond_karp

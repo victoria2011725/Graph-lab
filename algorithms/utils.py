@@ -3,6 +3,8 @@ def reconstruct_path(prev,start,end):
     current = end 
     while current is not None:
         path.append(current)
-        current = prev[start][current] 
+        current = prev.get(current)
     path.reverse()
+    if path[0] != start:
+        return None
     return path 

@@ -1,59 +1,57 @@
 class Graph:
     def __init__(self, directed = True):
-        self.edges= {}
+        self.adj= {}
         self.directed = directed
 
     def add_node(self,node):
-        self.edges[node] = {}
+        if node not in self.adj:
+            self.adj[node] = {}
 
     def remove_node(self,node):
-        self.edges.pop(node,None)
-        for u in list(self.edges.keys()):
-            if node in self.edges[u]:
-                self.edges[u].pop(node)
+        self.adj.pop(node,None)
+        for u in list(self.adj.keys()):
+            if node in self.adj[u]:
+                self.adj[u].pop(node)
 
     def add_edge(self,u,v,weight=1):
-        if u not in self.edges:
-            self.edges[u] = {}
-        if v not in self.edges:
-            self.edges[v] = {}
-        # forwards edge
-        self.edges[u][v] = weight
-        # if not direced add reverse edge
+        if u not in self.adj:
+            self.adj[u] = {}
+        if v not in self.adj:
+            self.adj[v] = {}
+        self.adj[u][v] = weight 
+
         if not self.directed:
-            self.edges[v][u] = weight 
+            self.adj[v][u] = weight 
 
     def remove_edges(self,u,v):
-        self.edges[u].pop(v,None)
+        if u in self.adj:
+            self.adj[u].pop(v,None)
 
     def neighbours(self,node):
-        return list(self.edges[node].keys())
-
+        return list(self.adj[node].keys())
     def get_weight(self,u,v):
-        return self.edges[u][v]
+        return self.adj[u][v]
     
     def nodes(self):
-        return list(self.edges.keys())
+        return list(self.adj.keys())
     
-    def edges(self):
+    def edge_list(self):
         edges = []
-        for u in self.edges:
-            for v,weight in self.edges[u].items():
+        for u in self.adj:
+            for v,weight in self.adj[u].items():
                 edges.append((u,v,weight))
-    def get_edges(self):
+        return edges 
+    def sort_edges(self):
         edges = []
-        seen = set()
-
-        for u in self.nodes():
-            for v,weight in self.edges[u].items():
-                if (v,u) not in seen:
-                    edges.append((weight,u,v))
-                    seen.add((u,v))
+        for u in self.adj:
+            for v,weight in self.adj[u].items():
+                edges.append((weight,u,v))
         return edges 
-        return edges 
+        
+    
     def has_negative_weights(self):
-        for u in self.edges:
-            for v,weight in self.edges[u].items():
+        for u in self.adj:
+            for v,weight in self.adj[u].items():
                 if weight < 0:
                     return True 
         return False 

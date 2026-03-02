@@ -9,7 +9,7 @@ def floyd_warshall(graph):
             prev[i][j] = None 
     for i in graph.nodes():
         distances[i][i] = 0 
-        for j,weight in graph.edges[i].items():
+        for j,weight in graph.adj[i].items():
             distances[i][j] = weight 
             prev[i][j] = i 
     for intermediate in graph.nodes():

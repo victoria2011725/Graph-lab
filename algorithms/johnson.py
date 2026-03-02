@@ -1,7 +1,7 @@
 import heapq 
 def johnson(graph):
     q = "dummy"
-    edges = graph.edges()
+    edges = graph.edge_list()
     for node in graph.nodes():
         edges.append((0,q,node))
     # bellman_ford 
@@ -9,7 +9,7 @@ def johnson(graph):
     for node in graph.nodes():
         h[node] = float("inf")
     h[q] = 0 
-    for _ in range(len(graph.nodes)):
+    for _ in range(len(graph.nodes())):
         changed = False 
         for u,v,weight in edges:
             if h[u] != float("inf") and h[u] + weight < h[v]:
