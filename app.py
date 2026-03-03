@@ -136,12 +136,6 @@ if mode == "Algorithm Mode":
         ["BFS","DFS recursive","DFS iterative","Dijkstra","Bellman-Ford","Floyd-Warshall","Kruskal","Prim","Tarjan","Kosaraju","Hopcraft Karp","Hungarian","Edmond Karp","Johnson"],
         key = "algorithm_select"
     )
-if "run_algo" not in st.session_state:
-    st.session_state.run_algo = False 
-if st.button("Run Algorithm"):
-    st.session_state.run_algo = True 
-if st.session_state.run_algo:
-    run_algorithm(algorithm,G)
 if mode == "Task Mode":
     task = st.selectbox(
         "Choose Task",
@@ -153,5 +147,39 @@ if mode == "Task Mode":
             "Find maximum flow"
         ]
     )
-    if st.button("Solve Task"):
-        solve_task(task,G)
+if st.button("Solve Task"):
+        if task == "Find shortest  path":
+            if G.has_negative_weights():
+                st.write("Bellman Ford executing - has negative edges so can't run Dijkstra")
+                run_algorithm("Bellman-Ford",G)
+            else:
+                st.write("Dijkstra executing - optimal for this graph")
+                run_algorithm("Dijkstra",G)
+        elif task == "Find all pairs shortest paths":
+            if len(G.nodes()) > 40:
+                st.write("Johnson executing - optimal as large node number makes it faster than Floyd-Warshall")
+                run_algorithm("Johnson", G)
+            else: 
+                st.write("Floyd-Warshall executing - small node number so efficient")
+                run_algorithm("Floyd-Warshall",G)
+        elif task == "Find minimum spanning tree":
+            if G.density() < 0.3:
+                st.write("Kruskal executing - optimal as graph is sparse")
+                run_algorithm("Kruskal",G)
+            else:
+                st.write("Prim executing - optimal as graph is dense")
+                run_algorithm("Prim",G)
+        elif task == "Find strongly connected components":
+            if not G.directed:
+                st.write("Strongly connected components only apply to directed graphs.")
+            else:
+                st.write("Tarjan executing")
+                run_algorithm("Tarjan",G)
+
+        
+if "run_algo" not in st.session_state:
+    st.session_state.run_algo = False 
+if st.button("Run Algorithm"):
+    st.session_state.run_algo = True 
+if st.session_state.run_algo:
+    run_algorithm(algorithm,G)

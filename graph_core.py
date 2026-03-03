@@ -55,3 +55,16 @@ class Graph:
                 if weight < 0:
                     return True 
         return False 
+    def density(self):
+        V = len(self.nodes())
+        E = len(self.edge_list)
+
+        if V <= 1:
+            return 0 
+        if not self.directed:
+            E = E / 2
+        if self.directed:
+            max_edges = V * (V-1)
+        else:
+            max_edges = V * (V-1) /2 
+        return E / max_edges 
