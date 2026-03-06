@@ -5,84 +5,136 @@ import networkx as nx
 from graph_core import Graph 
 import matplotlib.pyplot as plt
 import algorithms 
-def run_algorithm(name,G):
+if "active_algorithm" not in st.session_state:
+    st.session_state.active_algorithm = None 
+def run_algorithm(name,G,source,target):
     if name == "BFS":
-        source = st.text_input("Source Node")
-        target = st.text_input("Target Node")
+        st.divider()
+        st.header("Algorithm Results")
         result = algorithms.bfs(G,source,target)
         st.write(result)
     elif name == "Dijkstra":
-        source = st.text_input("Source Node")
-        if source: 
-            source = source.strip()
-            if source not in G.nodes():
-                st.error("Source node does not exist in the graph")
-                return 
-            
+        st.divider()
+        st.header("Algorithm Results") 
+        source = source.strip()
+        if source not in G.nodes():
+            st.error("Source node does not exist in the graph")
+        else:
             dist,prev = algorithms.dijkstra(G,source)
-            df = pd.DataFrame(dist.items(),columns = ["Node","Distance"])
-            paths = []
-            for node in G.nodes():
-                path = algorithms.reconstruct_path(prev,source,node)
-                paths.append(path)
+            data = []
+            for node,distance in dist.items():
+                if distance == float("inf"):
+                    distance = None
+                data.append([node,distance])
+            df = pd.DataFrame(data,columns=["Node","Distance"])
+            st.subheader(f"Shortest Paths from {source}")
             st.table(df)
-            st.write(paths)
-    elif name == "Bellman-Ford":
-        source = st.text_input("Source Node")
-        if source: 
-            source = source.strip()
-            if source not in G.nodes():
-                st.error("Source node does not exist in the graph")
-                return 
             
-            result = algorithms.bellman_ford(G,source)
-            if result is None:
-                st.error("Negative cycle detected in graph.")
-                return 
-            dist,prev = result 
-            df = pd.DataFrame(dist.items(),columns = ["Node","Distance"])
-            paths = []
-            for node in G.nodes():
-                path = algorithms.reconstruct_path(prev,source,node)
-                paths.append(path)
+    elif name == "Bellman-Ford":
+        st.divider()
+        st.header("Algorithm Results") 
+        source = source.strip()
+        if source not in G.nodes():
+            st.error("Source node does not exist in the graph")
+        else:
+            dist,prev = algorithms.bellman_ford(G,source)
+            data = []
+            for node,distance in dist.items():
+                if distance == float("inf"):
+                    distance = None
+                data.append([node,distance])
+            df = pd.DataFrame(data,columns=["Node","Distance"])
+            st.subheader(f"Shortest Paths from {source}")
             st.table(df)
-            st.write(paths)
     elif name == "DFS recursive":
-        source = st.text_input("Source Node")
-        target = st.text_input("Target Node")
+        st.divider()
+        st.header("Algorithm Results")
         path = algorithms.dfs_recursive(G,source,target)
         st.write(path)
     elif name == "DFS iterative":
-        source = st.text_input("Source Node")
-        target = st.text_input("Target Node")
+        st.divider()
+        st.header("Algorithm Results")
         path = algorithms.dfs_iterative(G,source,target)
         st.write(path)
     elif name == "Floyd-Warshall":
+        st.divider()
+        st.header("Algorithm Results")
         dist,prev = algorithms.floyd_warshall(G)
-        df = pd.DataFrame(dist.items(),columns = ["Node","Distance"])
+        nodes = list(dist.keys())
+        matrix = []
+        for u in nodes:
+            row = []
+            for v in nodes:
+                value = dist[u][v]
+                if value == float("inf"):
+                    row.append("Infinity")
+                else:
+                    row.append(value) 
+            matrix.append(row)
+        df = pd.DataFrame(matrix,index =nodes,columns=nodes)
+        st.subheader("All-Pairs Shortest Path Matrix")
         st.table(df)
+        
     elif name == "Kruskal":
+        st.divider()
+        st.header("Algorithm Results")
         mst = algorithms.kruskal(G)
-        st.write(mst)
-    elif name =="Prim":
-        mst = algorithms.find_all_mst(G)
-        st.write(mst)
-    elif name == "Tarjan":
-        SCCs = algorithms.tarjan(G)
-        st.write(SCCs)
-    elif name == "Kosaraju":
-        SCCs = algorithms.kosaraju(G)
-        st.write(SCCs)
-    elif name == "Edmond Karp":
-        source = st.text_input("Source Node")
-        sink = st.text_input("Sink Node")
-        max_flow = algorithms.edmond_karp(G,source,sink)
-        st.write(f"Max flow : {max_flow}")
-    elif name == "Johnson":
-        dist,prev = algorithms.johnson(G)
-        paths = []
-        df = pd.DataFrame(dist.items(),columns = ["Node","Distance"])
+        df = pd.DataFrame(mst, columns = ["Weight","From","To"])
+        st.subheader("Minimum Spanning Tree")
         st.table(df)
+
+        total_weight = sum(edge[0] for edge in mst)
+        st.success(f"Total MST Weight: {total_weight}")
+    elif name =="Prim":
+        st.divider()
+        st.header("Algorithm Results")
+        MSTs = algorithms.find_all_mst(G)
+        mst = [edge for component in MSTs for edge in component]
+        df = pd.DataFrame(mst, columns = ["Weight","From","To"])
+        st.subheader("Minimum Spanning Tree")
+        st.table(df)
+
+        total_weight = sum(edge[0] for edge in mst)
+        st.success(f"Total MST Weight: {total_weight}")
+    elif name == "Tarjan":
+        st.divider()
+        st.header("Algorithm Results")
+        SCCs = algorithms.tarjan(G)
+        st.subheader("Strongly Connected Components")
+        for i,component in enumerate(SCCs,1):
+            st.markdown(f"**Component {i}:** {', '.join(component)}")
+    elif name == "Kosaraju":
+        st.divider()
+        st.header("Algorithm Results")
+        SCCs = algorithms.kosaraju(G)
+        st.subheader("Strongly Connected Components")
+        for i,component in enumerate(SCCs,1):
+            st.markdown(f"**Component {i}:** {', '.join(component)}")
+    elif name == "Edmond Karp":
+        st.divider()
+        st.header("Algorithm Results")
+        max_flow = algorithms.edmond_karp(G,source,target)
+        st.success(f"Maximum Flow from {source} to {target} : {max_flow}")
+    elif name == "Johnson":
+        st.divider()
+        st.header("Algorithm Results")
+        dist,prev = algorithms.johnson(G)
+        nodes = list(dist.keys())
+        matrix = []
+        for u in nodes:
+            row = []
+            for v in nodes:
+                value = dist[u][v]
+                if value == float("inf"):
+                    row.append("Infinity")
+                else:
+                    row.append(value) 
+            matrix.append(row)
+        df = pd.DataFrame(matrix,index =nodes,columns=nodes)
+        st.subheader("All-Pairs Shortest Path Matrix")
+        st.table(df)
+    else:
+        st.write("Confused")
 #Initialise graph in session state 
 directed = st.checkbox("Directed Graph",value = False)
 if "graph" not in st.session_state:
@@ -128,7 +180,8 @@ st.pyplot(fig)
 # algorithm selection
 mode = st.radio(
     "Choose mode",
-    ["Algorithm Mode","Task Mode"]
+    ["Algorithm Mode","Task Mode"],
+    key = "mode_select"
 ) 
 if mode == "Algorithm Mode":
     algorithm = st.selectbox(
@@ -136,7 +189,22 @@ if mode == "Algorithm Mode":
         ["BFS","DFS recursive","DFS iterative","Dijkstra","Bellman-Ford","Floyd-Warshall","Kruskal","Prim","Tarjan","Kosaraju","Hopcraft Karp","Hungarian","Edmond Karp","Johnson"],
         key = "algorithm_select"
     )
-if mode == "Task Mode":
+    if algorithm == "BFS" or algorithm == "DFS recursive" or algorithm == "DFS iterative":
+        source = st.text_input("Source Node",key = "algo_source1")
+        target = st.text_input("Target Node",key = "algo_source2")
+    elif algorithm == "Edmond Karp":
+        source = st.text_input("Source Node",key = "algo_source1")
+        target = st.text_input("Sink Node",key = "algo_source2")
+    elif algorithm == "Dijkstra" or algorithm == "Bellman-Ford":
+        source = st.text_input("Source Node",key = "algo_source1")
+        target = None
+    else:
+        source = None 
+        target = None 
+         
+    if st.button("Run"):
+        run_algorithm(algorithm,G,source,target)
+elif mode == "Task Mode":
     task = st.selectbox(
         "Choose Task",
         [
@@ -147,39 +215,54 @@ if mode == "Task Mode":
             "Find maximum flow"
         ]
     )
-if st.button("Solve Task"):
-        if task == "Find shortest  path":
+    if task == "Find shortest path":
+        target = None 
+        source = st.text_input("Source Node",key="task_source")
+        if st.button("Run"):    
             if G.has_negative_weights():
-                st.write("Bellman Ford executing - has negative edges so can't run Dijkstra")
-                run_algorithm("Bellman-Ford",G)
+                st.write("Belllman Ford executing")
+                run_algorithm("Bellman_Ford",G,source,target)
             else:
-                st.write("Dijkstra executing - optimal for this graph")
-                run_algorithm("Dijkstra",G)
-        elif task == "Find all pairs shortest paths":
+                st.write("Dijkstra executing")
+                run_algorithm("Dijkstra",G,source,target)
+    elif task == "Find all pairs shortest paths":
+        source = None 
+        target = None 
+        if st.button("Run"):
             if len(G.nodes()) > 40:
                 st.write("Johnson executing - optimal as large node number makes it faster than Floyd-Warshall")
-                run_algorithm("Johnson", G)
+                run_algorithm("Johnson", G,source,target)
             else: 
                 st.write("Floyd-Warshall executing - small node number so efficient")
-                run_algorithm("Floyd-Warshall",G)
-        elif task == "Find minimum spanning tree":
+                run_algorithm("Floyd-Warshall",G,source,target)
+    elif task == "Find minimum spanning tree":
+        source = None 
+        target = None 
+        if st.button("Run"):
             if G.density() < 0.3:
                 st.write("Kruskal executing - optimal as graph is sparse")
-                run_algorithm("Kruskal",G)
+                run_algorithm("Kruskal",G,source,target)
             else:
                 st.write("Prim executing - optimal as graph is dense")
-                run_algorithm("Prim",G)
-        elif task == "Find strongly connected components":
+                run_algorithm("Prim",G,source,target)
+    elif task == "Find strongly connected components":
+        source = None
+        target = None 
+        if st.button("Run"):
             if not G.directed:
                 st.write("Strongly connected components only apply to directed graphs.")
             else:
                 st.write("Tarjan executing")
-                run_algorithm("Tarjan",G)
+                run_algorithm("Tarjan",G,source,target)
+    elif task == "Find maximum flow":
+        source = st.text_input("Source node",key="task_source")
+        sink = st.text_input("Sink node",key="task_sink")
+        if st.button("Run"):
+            if not G.directed:
+                st.write("Maximum flow requires directed graph")
+            else:
+                st.write("Edmond-Karp executing")
+                run_algorithm("Edmond Karp",G,source,sink)
 
         
-if "run_algo" not in st.session_state:
-    st.session_state.run_algo = False 
-if st.button("Run Algorithm"):
-    st.session_state.run_algo = True 
-if st.session_state.run_algo:
-    run_algorithm(algorithm,G)
+

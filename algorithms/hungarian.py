@@ -59,7 +59,7 @@ def hungarian(C):
         elif step == 5:
             mask = np.outer(~row_covered,~col_covered)
             min_val = C[mask].min()
-            C[~row_covered] -= min_val 
+            C[~row_covered,:] -= min_val 
             C[:col_covered] += min_val 
             step = 4 
         elif step == 6:

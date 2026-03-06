@@ -57,7 +57,7 @@ class Graph:
         return False 
     def density(self):
         V = len(self.nodes())
-        E = len(self.edge_list)
+        E = len(self.edge_list())
 
         if V <= 1:
             return 0 
