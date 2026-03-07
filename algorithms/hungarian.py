@@ -41,7 +41,7 @@ def hungarian(C):
                             break 
                 if r_idx == -1:
                     zero_found = True 
-                    setp = 5 
+                    step = 5
                 else:
                     marked[r_idx,c_idx] = 2
                     star_col = -1 
@@ -60,7 +60,7 @@ def hungarian(C):
             mask = np.outer(~row_covered,~col_covered)
             min_val = C[mask].min()
             C[~row_covered,:] -= min_val 
-            C[:col_covered] += min_val 
+            C[:,col_covered] += min_val 
             step = 4 
         elif step == 6:
             path = [path_start]
@@ -70,10 +70,10 @@ def hungarian(C):
                 for r in range(n):
                     if marked[r,last_c] == 1:
                         star_r = r 
-                        path.append((r,last_c))
                         break 
                 if star_r == -1:
                     break 
+                path.append((star_r,last_c))
                 last_r,last_c = path[-1]
                 prime_c = -1 
                 for c in range(n):
@@ -90,5 +90,6 @@ def hungarian(C):
             row_covered.fill(False)
             col_covered.fill(False)
             step = 3
+    
     return marked 
 

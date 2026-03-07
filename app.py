@@ -5,6 +5,8 @@ import networkx as nx
 from graph_core import Graph 
 import matplotlib.pyplot as plt
 import algorithms 
+from bipartite_graph import BipartiteGraph
+from algorithms.dinic import Dinic
 if "active_algorithm" not in st.session_state:
     st.session_state.active_algorithm = None 
 def run_algorithm(name,G,source,target):
@@ -74,7 +76,32 @@ def run_algorithm(name,G,source,target):
         df = pd.DataFrame(matrix,index =nodes,columns=nodes)
         st.subheader("All-Pairs Shortest Path Matrix")
         st.table(df)
-        
+    elif name == "Hungarian":
+       st.divider()
+       st.header("Algorithm Results")
+
+       matching = G.solve_assignment()
+
+       rows = []
+       total_cost = 0 
+
+       for u,v in matching:
+        cost = G.edges[u][v] 
+        rows.append([u,v,cost])
+        total_cost += cost 
+       
+       df = pd.DataFrame(rows,columns=["Left Node","Right Node","Cost"])
+
+       st.table(df)
+       st.write("Total Cost:",total_cost)
+    elif name == "Hopcraft Karp":
+       st.divider()
+       st.header("Algorithm Results")
+       maximum, pairs = G.max_matching()
+       st.write("Max Matching:", maximum)
+       st.write("Matches:")
+       for u,v in pairs:
+        st.write(f"{u} - {v}")
     elif name == "Kruskal":
         st.divider()
         st.header("Algorithm Results")
@@ -133,12 +160,31 @@ def run_algorithm(name,G,source,target):
         df = pd.DataFrame(matrix,index =nodes,columns=nodes)
         st.subheader("All-Pairs Shortest Path Matrix")
         st.table(df)
+    elif name == "Dinic":
+        st.divider()
+        st.header("Algorithm Results")
+        d = Dinic(G,source,target) 
+        max_f = d.max_flow()
+        st.success(f"Maximum Flow from {source} to {target} : {max_f}")
     else:
         st.write("Confused")
 #Initialise graph in session state 
 directed = st.checkbox("Directed Graph",value = False)
+bipartite = st.checkbox("Bipartite Graph",value = False)
 if "graph" not in st.session_state:
-    st.session_state.graph = Graph(directed=directed)
+    st.session_state.graph = None 
+if bipartite:
+    left_nodes_input = st.text_input("Left nodes",key="left_nodes") 
+    right_nodes_input = st.text_input("Right nodes",key="right_nodes")
+
+    left_nodes = [x.strip() for x in left_nodes_input.split (",") if x.strip()]
+    right_nodes = [x.strip() for x in right_nodes_input.split(",") if x.strip()]
+    if "graph" not in st.session_state or not isinstance(st.session_state.graph,BipartiteGraph):
+        if left_nodes and right_nodes:
+            st.session_state.graph = BipartiteGraph(left_nodes,right_nodes)
+else:
+    if not isinstance(st.session_state.graph,Graph):
+        st.session_state.graph = Graph(directed=directed)
 
 G = st.session_state.graph 
 
@@ -163,10 +209,15 @@ if st.button("Add Edge"):
 st.subheader("Current Graph")
 
 nx_G = nx.DiGraph() if G.directed else nx.Graph()
-
-for u in G.adj:
-    for v,w in G.adj[u].items():
-        nx_G.add_edge(u,v,weight=w)
+if hasattr(G,"edges"):
+    edges = G.edges 
+elif hasattr(G,"adj"):
+    edges = G.adj 
+else:
+    edges = {}
+for u in edges:
+        for v,w in edges[u].items():
+            nx_G.add_edge(u,v,weight=w)
 
 fig,ax = plt.subplots()
 pos = nx.spring_layout(nx_G)
@@ -177,35 +228,37 @@ edge_labels = nx.get_edge_attributes(nx_G,"weight")
 nx.draw_networkx_edge_labels(nx_G,pos,edge_labels=edge_labels)
 
 st.pyplot(fig)
-# algorithm selection
-mode = st.radio(
+# algorithm selection 
+if not bipartite:
+    mode = st.radio(
     "Choose mode",
     ["Algorithm Mode","Task Mode"],
     key = "mode_select"
-) 
-if mode == "Algorithm Mode":
-    algorithm = st.selectbox(
-        "Choose Algorithm",
-        ["BFS","DFS recursive","DFS iterative","Dijkstra","Bellman-Ford","Floyd-Warshall","Kruskal","Prim","Tarjan","Kosaraju","Hopcraft Karp","Hungarian","Edmond Karp","Johnson"],
-        key = "algorithm_select"
     )
-    if algorithm == "BFS" or algorithm == "DFS recursive" or algorithm == "DFS iterative":
-        source = st.text_input("Source Node",key = "algo_source1")
-        target = st.text_input("Target Node",key = "algo_source2")
-    elif algorithm == "Edmond Karp":
-        source = st.text_input("Source Node",key = "algo_source1")
-        target = st.text_input("Sink Node",key = "algo_source2")
-    elif algorithm == "Dijkstra" or algorithm == "Bellman-Ford":
-        source = st.text_input("Source Node",key = "algo_source1")
-        target = None
-    else:
-        source = None 
-        target = None 
+    if mode == "Algorithm Mode":
+        algorithm = st.selectbox(
+        "Choose Algorithm",
+        ["BFS","DFS recursive","DFS iterative","Dijkstra","Bellman-Ford","Floyd-Warshall","Kruskal","Prim","Tarjan","Kosaraju","Hopcraft Karp","Hungarian","Edmond Karp","Johnson","Dinic"],
+        key = "algorithm_select"
+        )
+
+        if algorithm == "BFS" or algorithm == "DFS recursive" or algorithm == "DFS iterative":
+            source = st.text_input("Source Node",key = "algo_source1")
+            target = st.text_input("Target Node",key = "algo_source2")
+        elif algorithm == "Edmond Karp" or "Dinic":
+            source = st.text_input("Source Node",key = "algo_source1")
+            target = st.text_input("Sink Node",key = "algo_source2")
+        elif algorithm == "Dijkstra" or algorithm == "Bellman-Ford":
+            source = st.text_input("Source Node",key = "algo_source1")
+            target = None
+        else:
+            source = None 
+            target = None 
          
-    if st.button("Run"):
-        run_algorithm(algorithm,G,source,target)
-elif mode == "Task Mode":
-    task = st.selectbox(
+        if st.button("Run"):
+            run_algorithm(algorithm,G,source,target)
+    elif mode == "Task Mode":
+        task = st.selectbox(
         "Choose Task",
         [
             "Find shortest path",
@@ -214,55 +267,111 @@ elif mode == "Task Mode":
             "Find strongly connected components",
             "Find maximum flow"
         ]
+        )
+        if task == "Find shortest path":
+            target = None 
+            source = st.text_input("Source Node",key="task_source")
+            if st.button("Run"):    
+                if G.has_negative_weights():
+                    st.write("Belllman Ford executing")
+                    run_algorithm("Bellman_Ford",G,source,target)
+                else:
+                    st.write("Dijkstra executing")
+                    run_algorithm("Dijkstra",G,source,target)
+        elif task == "Find all pairs shortest paths":
+            source = None 
+            target = None 
+            if st.button("Run"):
+                if len(G.nodes()) > 40:
+                    st.write("Johnson executing - optimal as large node number makes it faster than Floyd-Warshall")
+                    run_algorithm("Johnson", G,source,target)
+                else: 
+                    st.write("Floyd-Warshall executing - small node number so efficient")
+                    run_algorithm("Floyd-Warshall",G,source,target)
+        elif task == "Find minimum spanning tree":
+            source = None 
+            target = None 
+            if st.button("Run"):
+                if G.density() < 0.3:
+                    st.write("Kruskal executing - optimal as graph is sparse")
+                    run_algorithm("Kruskal",G,source,target)
+                else:
+                    st.write("Prim executing - optimal as graph is dense")
+                    run_algorithm("Prim",G,source,target)
+        elif task == "Find strongly connected components":
+            source = None
+            target = None 
+            if st.button("Run"):
+                if not G.directed:
+                    st.write("Strongly connected components only apply to directed graphs.")
+                else:
+                    st.write("Tarjan executing - optimal for this graph")
+                    run_algorithm("Tarjan",G,source,target)
+        elif task == "Find maximum flow":
+            source = st.text_input("Source node",key="task_source")
+            sink = st.text_input("Sink node",key="task_sink")
+            if st.button("Run"):
+                if not G.directed:
+                    st.write("Maximum flow requires directed graph")
+                else:
+                    st.write("Dinic executing")
+                    run_algorithm("Dinic",G,source,sink)
+else:
+    mode = st.radio(
+    "Choose mode",
+    ["Algorithm Mode","Task Mode"],
+    key = "mode_select"
     )
-    if task == "Find shortest path":
-        target = None 
-        source = st.text_input("Source Node",key="task_source")
-        if st.button("Run"):    
-            if G.has_negative_weights():
-                st.write("Belllman Ford executing")
-                run_algorithm("Bellman_Ford",G,source,target)
-            else:
-                st.write("Dijkstra executing")
-                run_algorithm("Dijkstra",G,source,target)
-    elif task == "Find all pairs shortest paths":
-        source = None 
-        target = None 
-        if st.button("Run"):
-            if len(G.nodes()) > 40:
-                st.write("Johnson executing - optimal as large node number makes it faster than Floyd-Warshall")
-                run_algorithm("Johnson", G,source,target)
-            else: 
-                st.write("Floyd-Warshall executing - small node number so efficient")
-                run_algorithm("Floyd-Warshall",G,source,target)
-    elif task == "Find minimum spanning tree":
-        source = None 
-        target = None 
-        if st.button("Run"):
-            if G.density() < 0.3:
-                st.write("Kruskal executing - optimal as graph is sparse")
-                run_algorithm("Kruskal",G,source,target)
-            else:
-                st.write("Prim executing - optimal as graph is dense")
-                run_algorithm("Prim",G,source,target)
-    elif task == "Find strongly connected components":
-        source = None
-        target = None 
-        if st.button("Run"):
-            if not G.directed:
-                st.write("Strongly connected components only apply to directed graphs.")
-            else:
-                st.write("Tarjan executing")
-                run_algorithm("Tarjan",G,source,target)
-    elif task == "Find maximum flow":
-        source = st.text_input("Source node",key="task_source")
-        sink = st.text_input("Sink node",key="task_sink")
-        if st.button("Run"):
-            if not G.directed:
-                st.write("Maximum flow requires directed graph")
-            else:
-                st.write("Edmond-Karp executing")
-                run_algorithm("Edmond Karp",G,source,sink)
+    if mode == "Algorithm Mode":
+        algorithm = st.selectbox(
+        "Choose Algorithm",
+        [
+            "Hungarian",
+            "Hopcraft Karp"
+        ]
+        )
+        if algorithm == "Hopcraft Karp":
+            source = None 
+            target = None 
+            if st.button("Run"):
+                st.write("Hopcraft Karp executing")
+                run_algorithm("Hopcraft Karp",G,source,target)
+        elif algorithm == "Hungarian":
+            source = None 
+            target = None 
+            if st.button("Run"):
+                st.write("Hungarian algorithm executing")
+                run_algorithm("Hungarian",G,source,target)
+    elif mode == "Task Mode":
+        task = st.selectbox(
+        "Choose Task",
+        ["Find maximum matching",    
+         "Find optimal assignment"
+        ]
+        )
+        if task == "Find maximum matching":
+            source = None 
+            target = None 
+            if st.button("Run"):
+                st.write("Hopcraft Karp executing")
+                run_algorithm("Hopcraft Karp",G,source,target)
+        elif task == "Find optimal assignment":
+            source = None 
+            target = None 
+            if st.button("Run"):
+                st.write("Hungarian algorithm executing")
+                run_algorithm("Hungarian",G,source,target)
+
+            
+
+
+    
+        
+
+
+
 
         
+
+
 

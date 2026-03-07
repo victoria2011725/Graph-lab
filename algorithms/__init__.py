@@ -13,3 +13,4 @@ from .tarjan import tarjan
 from . utils import reconstruct_path
 from .hopcraft_karp import Hopcraft_Karp
 from .edmond_karp import edmond_karp
+from .dinic import Dinic

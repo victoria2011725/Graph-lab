@@ -1,5 +1,5 @@
 from algorithms import hungarian
-from algorithms import hopcraft_karp
+from algorithms import Hopcraft_Karp
 import numpy as np 
 class BipartiteGraph:
     def __init__(self,left_nodes,right_nodes):
@@ -14,7 +14,7 @@ class BipartiteGraph:
         if u not in self.left:
             raise ValueError(f"{u} not in left partition")
         if v not in self.right:
-            raise ValueERror(f"{v} not in right partition")
+            raise ValueError(f"{v} not in right partition")
         self.edges[u][v] = weight
     
     def to_cost_matrix(self):
@@ -36,19 +36,27 @@ class BipartiteGraph:
     def solve_assignment(self):
         C = self.to_cost_matrix()
         marked = hungarian(C)
-        return self.extract_maching(marked)
+        return self.extract_matching(marked)
     def max_matching(self):
-        u_count = len(self.left())
-        v_count = len(self.right())
+        u_count = len(self.left)
+        v_count = len(self.right)
         u_index = {u: i+1 for i,u in enumerate(self.left)}
         v_index = {v: i+1 for i,v in enumerate(self.right)}
-        adj = {u_index[u]: [] for u in self.left}
+        adj = {i: [] for i in range(u_count+1)}
 
-        for u in self.edges:
-            for v in self.edges[u]:
-                adj[u_index[u]].append(v_index[v])
+        for u in self.left:
+            if u in self.edges:
+                for v in self.edges[u]:
+                    if v in self.right:
+                        adj[u_index[u]].append(v_index[v])
         hk = Hopcraft_Karp(u_count,v_count,adj)
-        return hk.max_matching()
+        size,pairU = hk.max_matching()
+
+        pairs = []
+        for u in range(1,u_count+1):
+            if pairU[u] != 0:
+                pairs.append((self.left[u-1],self.right[pairU[u-1]]))
+        return size,pairs
 
 
     

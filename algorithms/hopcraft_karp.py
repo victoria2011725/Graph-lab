@@ -20,9 +20,9 @@ class Hopcraft_Karp:
         while queue:
             u = queue.popleft()
             for v in self.adj[u]:
-                if self.dist[v_pair[v]] == self.INF:
-                    self.dist[v_pair[v]] = self.dist[u] + 1
-                    queue.append(v)
+                if self.dist[self.v_pair[v]]== self.INF:
+                    self.dist[self.v_pair[v]] = self.dist[u] + 1 
+                    queue.append(self.v_pair[v])
         return self.dist[0] != self.INF 
     def dfs(self,u):
         if u != 0:
