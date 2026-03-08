@@ -1,4 +1,5 @@
 import streamlit as st 
+import time
 import pandas as pd 
 st.title("Graph Optimisation Lab")
 import networkx as nx 
@@ -7,6 +8,10 @@ import matplotlib.pyplot as plt
 import algorithms 
 from bipartite_graph import BipartiteGraph
 from algorithms.dinic import Dinic
+if "highlight_nodes" not in st.session_state:
+    st.session_state.highlight_nodes = set()
+if "highlight_edges" not in st.session_state:
+    st.session_state.highlight_edges = set()
 if "active_algorithm" not in st.session_state:
     st.session_state.active_algorithm = None 
 def run_algorithm(name,G,source,target):
@@ -206,28 +211,57 @@ if st.button("Add Edge"):
         st.success(f"Edge {node1} to {node2} added")
 
 # Draw graph 
-st.subheader("Current Graph")
 
-nx_G = nx.DiGraph() if G.directed else nx.Graph()
-if hasattr(G,"edges"):
-    edges = G.edges 
-elif hasattr(G,"adj"):
-    edges = G.adj 
-else:
-    edges = {}
-for u in edges:
+def render_graph(G,placeholder):
+    nx_G = nx.DiGraph() if G.directed else nx.Graph()
+    if hasattr(G,"edges"):
+        edges = G.edges 
+    elif hasattr(G,"adj"):
+        edges = G.adj 
+    else:
+        edges = {}
+    for u in edges:
         for v,w in edges[u].items():
             nx_G.add_edge(u,v,weight=w)
+    if "pos" not in st.session_state or set(st.session_state.pos.keys()) != set(nx_G.nodes()):
+        st.session_state.pos = nx.spring_layout(nx_G,seed=42)
+    pos = st.session_state.pos
 
-fig,ax = plt.subplots()
-pos = nx.spring_layout(nx_G)
+    highlight_nodes = st.session_state.get("highlight_nodes",set())
+    highlight_edges = st.session_state.get("highlight_edges",set())
 
-nx.draw(nx_G,pos,with_labels=True,ax=ax)
+    node_colours = []
+    for node in nx_G.nodes():
+        if node in highlight_nodes:
+            node_colours.append("red")
+        else:
+            node_colours.append("skyblue")
+    edge_colours = []
+    for edge in nx_G.edges():
+        if edge in highlight_edges:
+            edge_colours.append("red")
+        else:
+            edge_colours.append("black")
+    fig,ax = plt.subplots()
+    nx.draw(nx_G,
+            pos,
+            node_color=node_colours,
+            edge_color=edge_colours,
+            with_labels=True,
+            ax=ax
+    )
+    edge_labels = nx.get_edge_attributes(nx_G,"weight")
+    nx.draw_networkx_edge_labels(nx_G,pos,edge_labels=edge_labels)
 
-edge_labels = nx.get_edge_attributes(nx_G,"weight")
-nx.draw_networkx_edge_labels(nx_G,pos,edge_labels=edge_labels)
+    placeholder.pyplot(fig)
+    plt.close(fig)
 
-st.pyplot(fig)
+st.subheader("Current Graph")
+graph_placeholder = st.empty()
+st.session_state.graph_placeholder = graph_placeholder
+render_graph(G,graph_placeholder)
+      
+
 # algorithm selection 
 if not bipartite:
     mode = st.radio(
@@ -245,7 +279,7 @@ if not bipartite:
         if algorithm == "BFS" or algorithm == "DFS recursive" or algorithm == "DFS iterative":
             source = st.text_input("Source Node",key = "algo_source1")
             target = st.text_input("Target Node",key = "algo_source2")
-        elif algorithm == "Edmond Karp" or "Dinic":
+        elif algorithm == "Edmond Karp" or algorithm == "Dinic":
             source = st.text_input("Source Node",key = "algo_source1")
             target = st.text_input("Sink Node",key = "algo_source2")
         elif algorithm == "Dijkstra" or algorithm == "Bellman-Ford":

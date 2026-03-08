@@ -1,3 +1,4 @@
+from algorithms.utils import highlight
 def bellman_ford(graph,source):
     distances = {}
     prev = {}
@@ -9,6 +10,7 @@ def bellman_ford(graph,source):
     for _ in range(len(graph.nodes())-1):
         changed = False 
         for u,v,weight in graph.edge_list():
+            highlight(u,v)
             if distances[u] != float("inf") and distances[u] + weight < distances[v]:
                 distances[v] = distances[u] + weight
                 prev[v] = u 

@@ -1,3 +1,4 @@
+from algorithms.utils import highlight
 def kruskal(graph):
     edges = graph.sort_edges()   
     edges.sort()
@@ -28,6 +29,7 @@ def kruskal(graph):
             rank[x_root] += 1 
             
     for weight,u,v in edges:
+        highlight(u,v)
         if find(u) != find(v):
             mst.append((weight,u,v))
             union(u,v)

@@ -1,4 +1,5 @@
 from collections import deque
+from algorithms.utils import highlight
 class Dinic:
     def __init__(self,G,s,t):
         self.G = G
@@ -40,6 +41,7 @@ class Dinic:
             if cap > 0 and self.level[v] == self.level[u] + 1:
                 pushed = self.dfs(v, min(flow, cap), ptr)
                 if pushed > 0:
+                    highlight(u,v)
                     self.graph[u][i][1] -= pushed 
                     self.graph[v][rev_idx][1] += pushed 
                     return pushed
