@@ -31,3 +31,12 @@ It provides a visual interface for users to draw graphs and execute a wide range
 * Kosaraju & Tarjan: Identification of strongly connected components.
 * Edmonds-Karp: Max-flow using augmenting paths.
 * Dinic’s Algorithm: Highly efficient max-flow using level graphs and blocking flows.
+
+## Installation 
+
+Clone the repository:
+git clone https://github.com/victoria2011725/Graph-lab
+cd Graph-lab 
+pip install streamlit networkx matplotlib pandas 
+Run the application:
+streamlit run app.py
