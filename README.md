@@ -3,6 +3,7 @@
 Graph Lab is an interactive Streamlit application for graph construction and algorithmic analysis. 
 It provides a visual interface for users to draw graphs and execute a wide range of algorithms for pathfinding, connectivity, flow, and matching.
 
+**Live demo:** [Try Graph-lab here](https://graphlab.streamlit.app/)
 ### Key Features:
 * Interactive Construction: Draw graphs manually with support for directed and undirected edges.
 * Bipartite Support: Toggle bipartite mode to define specific left and right node sets.
