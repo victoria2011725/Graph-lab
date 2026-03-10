@@ -11,20 +11,3 @@ def reconstruct_path(prev,start,end):
         return None
     return path 
 
-def highlight(u=None,v=None,delay=0.5):
-    nodes = set()
-    edges = set()
-
-    if u is not None:
-        nodes.add(u)
-    if v is not None:
-        nodes.add(v)
-        edges.add((u,v))
-    
-    st.session_state.highlight_nodes = nodes 
-    st.session_state.highlight_edges = edges 
-
-    
-    time.sleep(delay)
-
-  

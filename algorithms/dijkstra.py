@@ -1,5 +1,4 @@
 import heapq 
-from algorithms.utils import highlight
 def dijkstra(graph,source):
     distances={}
     prev ={}
@@ -14,7 +13,6 @@ def dijkstra(graph,source):
         if current_distance > distances[current_node]:
             continue 
         for neighbour in graph.neighbours(current_node):
-            highlight(current_node,neighbour)
             distance = current_distance + graph.get_weight(current_node,neighbour)
             if distance < distances[neighbour]:
                 distances[neighbour]=distance 

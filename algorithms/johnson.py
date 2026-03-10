@@ -1,68 +1,70 @@
 import heapq 
+
 def johnson(graph):
+    nodes = list(graph.nodes())
     q = "dummy"
-    edges = graph.edge_list()
-    for node in graph.nodes():
-        edges.append((0,q,node))
-    # bellman_ford 
-    h = {}
-    for node in graph.nodes():
-        h[node] = float("inf")
-    h[q] = 0 
-    for _ in range(len(graph.nodes())):
+    edges = list(graph.edge_list()) 
+    
+    for node in nodes:
+        edges.append((q, node, 0)) 
+
+    # Bellman ford
+    h = {node: float("inf") for node in nodes}
+    h[q] = 0
+    
+    num_nodes = len(nodes) + 1
+    for _ in range(num_nodes):
         changed = False 
-        for u,v,weight in edges:
+        for u, v, weight in edges:
             if h[u] != float("inf") and h[u] + weight < h[v]:
                 h[v] = h[u] + weight 
                 changed = True 
         if not changed:
             break 
-    # negative cycle check
-    for u,v,weight in edges:
+    for u, v, weight in edges:
             if h[u] != float("inf") and h[u] + weight < h[v]:
-                return "None"
-    # reweight 
-    reweighted = {}
-    for u,v,weight in edges:
-        if u not in reweighted:
-            reweighted[u] = {}
+                return "Negative cycle present"
+
+    # Reweight
+    reweighted = {node: {} for node in nodes}
+    for u, v, weight in graph.edge_list():
         reweighted[u][v] = weight + h[u] - h[v]
-    #dijkstra 
+
+    # Dijkstra
     distances = {}
     paths = {}
 
-    for start in graph.nodes():
+    for start in nodes:
         distances[start] = {}
         paths[start] = {}
-        dist={}
-        prev={}
-        for node in graph.nodes():
-            dist[node] = float("inf")
-            prev[node] = None 
-        dist[start] = 0 
-        priority_queue = [(0,start)]
-        while priority_queue:
-            current_distance,current_node = heapq.heappop(priority_queue)
-            if current_distance > dist[current_node]:
-                continue 
-            for neighbour,weight in reweighted[current_node].items():
-                distance = current_distance + weight
-                if distance < dist[neighbour]:
-                    dist[neighbour] = distance 
-                    prev[neighbour] = current_node 
-                    heapq.heappush(priority_queue,(distance,neighbour))
-        for target in graph.nodes():
-            distances[start][target] = dist[target] - h[start] + h[target]
-            if distances[start][target] == float("inf"):
-                path[start][target] = None 
-            else:
-                path = []
-                current = target 
-                while current is not None:
-                    path.append(current)
-                    current = prev[current]
-                path.reverse()
-                paths[start][target] = path 
-
-    return distances,paths
+        dist = {node: float("inf") for node in nodes}
+        prev = {node: None for node in nodes}
         
+        dist[start] = 0 
+        priority_queue = [(0, start)]
+        
+        while priority_queue:
+            d, u = heapq.heappop(priority_queue)
+            if d > dist[u]:
+                continue 
+            
+            for v, weight in reweighted[u].items():
+                if dist[u] + weight < dist[v]:
+                    dist[v] = dist[u] + weight 
+                    prev[v] = u 
+                    heapq.heappush(priority_queue, (dist[v], v))
+        
+        for target in nodes:
+            if dist[target] == float("inf"):
+                distances[start][target] = float("inf")
+                paths[start][target] = None 
+            else:
+                distances[start][target] = dist[target] - h[start] + h[target]
+                path_list = []
+                curr = target 
+                while curr is not None:
+                    path_list.append(curr)
+                    curr = prev[curr]
+                paths[start][target] = path_list[::-1]
+
+    return distances, paths

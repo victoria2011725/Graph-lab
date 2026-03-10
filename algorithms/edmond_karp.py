@@ -1,5 +1,4 @@
 from collections import deque 
-from algorithms.utils import highlight
 def bfs_path(residual_graph,source,sink,parent):
     visited = {source}
     queue = deque([source])
@@ -40,7 +39,6 @@ def edmond_karp(graph,source,sink):
         current = sink 
         while current !=  source:
             prev = parent[current]
-            highlight(current,prev)
             residual_graph[prev][current] -= bottleneck 
             residual_graph[current][prev] += bottleneck 
             current = prev

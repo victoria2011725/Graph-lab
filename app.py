@@ -1,5 +1,4 @@
 import streamlit as st 
-import time
 import pandas as pd 
 st.title("Graph Optimisation Lab")
 import networkx as nx 
@@ -8,10 +7,6 @@ import matplotlib.pyplot as plt
 import algorithms 
 from bipartite_graph import BipartiteGraph
 from algorithms.dinic import Dinic
-if "highlight_nodes" not in st.session_state:
-    st.session_state.highlight_nodes = set()
-if "highlight_edges" not in st.session_state:
-    st.session_state.highlight_edges = set()
 if "active_algorithm" not in st.session_state:
     st.session_state.active_algorithm = None 
 def run_algorithm(name,G,source,target):
@@ -226,27 +221,9 @@ def render_graph(G,placeholder):
     if "pos" not in st.session_state or set(st.session_state.pos.keys()) != set(nx_G.nodes()):
         st.session_state.pos = nx.spring_layout(nx_G,seed=42)
     pos = st.session_state.pos
-
-    highlight_nodes = st.session_state.get("highlight_nodes",set())
-    highlight_edges = st.session_state.get("highlight_edges",set())
-
-    node_colours = []
-    for node in nx_G.nodes():
-        if node in highlight_nodes:
-            node_colours.append("red")
-        else:
-            node_colours.append("skyblue")
-    edge_colours = []
-    for edge in nx_G.edges():
-        if edge in highlight_edges:
-            edge_colours.append("red")
-        else:
-            edge_colours.append("black")
     fig,ax = plt.subplots()
     nx.draw(nx_G,
             pos,
-            node_color=node_colours,
-            edge_color=edge_colours,
             with_labels=True,
             ax=ax
     )
@@ -272,7 +249,7 @@ if not bipartite:
     if mode == "Algorithm Mode":
         algorithm = st.selectbox(
         "Choose Algorithm",
-        ["BFS","DFS recursive","DFS iterative","Dijkstra","Bellman-Ford","Floyd-Warshall","Kruskal","Prim","Tarjan","Kosaraju","Hopcraft Karp","Hungarian","Edmond Karp","Johnson","Dinic"],
+        ["BFS","DFS recursive","DFS iterative","Dijkstra","Bellman-Ford","Floyd-Warshall","Kruskal","Prim","Tarjan","Kosaraju","Edmond Karp","Johnson","Dinic"],
         key = "algorithm_select"
         )
 
