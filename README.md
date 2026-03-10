@@ -35,8 +35,12 @@ It provides a visual interface for users to draw graphs and execute a wide range
 ## Installation 
 
 Clone the repository:
+
 git clone https://github.com/victoria2011725/Graph-lab
 cd Graph-lab 
+
+Install dependencies:
+
 pip install streamlit networkx matplotlib pandas 
 Run the application:
 streamlit run app.py
